@@ -1,24 +1,20 @@
 var LargeLots = LargeLots || {};
 var LargeLots = {
-
   map: null,
-  map_centroid: [41.89409955811395, -87.77157783508301],
-  defaultZoom: 13,
   lastClickedLayer: null,
   geojson: null,
   marker: null,
   locationScope: 'Chicago',
-  boundaryCartocss: '#large_lot_boundary{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}',
-  parcelsCartocss: $('#englewood-styles').html().trim(),
-  boundingBox: {
-    'bottom': 41.86099561435056,
-    'top': 41.92488743920406,
-    'right': -87.72239685058594,
-    'left': -87.82487869262695
-  },
 
-  initialize: function() {
-
+  initialize: function(init_params) {
+      LargeLots.defaultZoom = init_params.defaultZoom;
+      LargeLots.map_centroid = init_params.map_centroid;
+      LargeLots.boundaryCartocss = init_params.boundaryCartocss;
+      LargeLots.parcelsCartocss = init_params.parcelsCartocss;
+      LargeLots.boundingBox = init_params.boundingBox;
+      LargeLots.tableName = init_params.tableName;
+      LargeLots.overlayName = init_params.overlayName;
+      LargeLots.mainWhere = init_params.mainWhere;
       if (!LargeLots.map) {
         LargeLots.map = L.map('map', {
           center: LargeLots.map_centroid,
@@ -49,7 +45,6 @@ var LargeLots = {
           info += "<p>PIN: " + props.pin14 + "<br />";
           info += "Zoned: " + props.zoning_classification + "<br />";
           info += "Sq Ft: " + props.sq_ft + "<br />";
-          //info += "Alderman: " + LargeLots.getAlderman(props.ward) + " (Ward " + props.ward + ")</p>";
           if (props.status == 1){
               info += "Status: <strong>Application received</strong></p>"
           } else {
@@ -64,20 +59,24 @@ var LargeLots = {
       }
 
       LargeLots.info.addTo(LargeLots.map);
-
-      var fields = "pin14,zoning_classification,ward,street_name,dir,street_number,type,sq_ft,status"
-      var cartocss = $('#englewood-styles').html().trim();
+      // We'll need to add a status column
+      var fields = "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type,city_owned,residential"
+      var layerOpts = {}
+      var mainSQL = 'select * from ' + LargeLots.tableName;
+      if (LargeLots.mainWhere){
+          mainSQL = mainSQL + LargeLots.mainWhere;
+      }
       var layerOpts = {
           user_name: 'datamade',
           type: 'cartodb',
           cartodb_logo: false,
           sublayers: [{
-                  sql: "SELECT * FROM lots_with_status where status = 2",
+                  sql: mainSQL,
                   cartocss: LargeLots.parcelsCartocss,
                   interactivity: fields
               },
               {
-                  sql: 'select * from east_garfield_park',
+                  sql: 'select * from ' + LargeLots.overlayName,
                   cartocss: LargeLots.boundaryCartocss
               }]
       }
@@ -103,8 +102,8 @@ var LargeLots = {
                 }
             }, 1000)
         }).error(function(e) {
-        //console.log('ERROR')
-        //console.log(e)
+            console.log('ERROR')
+            console.log(e)
       });
       $("#search_address").val(LargeLots.convertToPlainString($.address.parameter('address')));
       LargeLots.addressSearch();
@@ -171,7 +170,6 @@ var LargeLots = {
 
   selectParcel: function (props){
       var address = LargeLots.formatAddress(props);
-      var alderman = LargeLots.getAlderman(props.ward);
       var zoning = LargeLots.getZoning(props.zoning_classification);
       var status = 'Not applied for';
       var status_class = 'available';
@@ -190,23 +188,6 @@ var LargeLots = {
         </tbody></table>";
       $.address.parameter('pin', props.pin14)
       $('#lot-info').html(info);
-  },
-
-  getAlderman: function (ward){
-      var lookup = {
-          20: 'Willie B. Cochran',
-          6: 'Roderick T. Sawyer',
-          16: 'JoAnn Thompson',
-          17: 'Latasha Thomas',
-          11: 'James A. Balcer',
-          15: 'Toni Foulkes',
-          18: 'Lona Lane',
-          3: 'Pat Dowell',
-          4: 'William Burns',
-          5: 'Leslie Hariston',
-          8: 'Michelle Harris'
-      }
-      return lookup[ward]
   },
 
   getZoning: function(code){
