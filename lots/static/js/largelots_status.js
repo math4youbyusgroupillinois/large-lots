@@ -2,7 +2,7 @@ var LargeLots = LargeLots || {};
 var LargeLots = {
 
   map: null,
-  map_centroid: [41.77809673652204, -87.63673782348633],
+  map_centroid: [41.89409955811395, -87.77157783508301],
   defaultZoom: 13,
   lastClickedLayer: null,
   geojson: null,
@@ -11,10 +11,10 @@ var LargeLots = {
   boundaryCartocss: '#large_lot_boundary{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}',
   parcelsCartocss: $('#englewood-styles').html().trim(),
   boundingBox: {
-    'bottom': 41.74378003152462,
-    'top': 41.807788914288814,
-    'right': -87.57219314575195,
-    'left': -87.69750595092773
+    'bottom': 41.86099561435056,
+    'top': 41.92488743920406,
+    'right': -87.72239685058594,
+    'left': -87.82487869262695
   },
 
   initialize: function() {
@@ -77,7 +77,7 @@ var LargeLots = {
                   interactivity: fields
               },
               {
-                  sql: 'select * from large_lot_boundary',
+                  sql: 'select * from east_garfield_park',
                   cartocss: LargeLots.boundaryCartocss
               }]
       }

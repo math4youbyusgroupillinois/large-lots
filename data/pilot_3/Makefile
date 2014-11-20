@@ -89,7 +89,8 @@ austin_lots.table: city-owned-residential-lots.table eligable_lots.table
 				TRUE as city_owned, \
 				TRUE as residential, \
 				FALSE as alderman_hold, \
-				p.geom as geom \
+				p.geom as geom, \
+				0 as status \
 			FROM eligable_lots AS e \
 			LEFT JOIN city_owned_residential_lots AS l \
 				ON e.pin14 = l.pin14 \
@@ -111,7 +112,8 @@ austin_lots.updates: austin_lots.table
 				eligable, \
 				city_owned, \
 				residential, \
-				alderman_hold ) VALUES ( \
+				alderman_hold, \
+				status ) VALUES ( \
 					16161150470000, \
 					5300, \
 					'W', \
@@ -123,7 +125,8 @@ austin_lots.updates: austin_lots.table
 					TRUE, \
 					TRUE, \
 					TRUE, \
-					FALSE \
+					FALSE, \
+					0 \
 				)"
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"UPDATE austin_lots SET geom=subq.geom FROM ( \
@@ -146,7 +149,8 @@ austin_lots.updates: austin_lots.table
 				eligable, \
 				city_owned, \
 				residential, \
-				alderman_hold ) VALUES ( \
+				alderman_hold, \
+				status) VALUES ( \
 					16094230010000, \
 					4955, \
 					'W', \
@@ -158,7 +162,8 @@ austin_lots.updates: austin_lots.table
 					TRUE, \
 					TRUE, \
 					TRUE, \
-					FALSE \
+					FALSE, \
+					0 \
 				)"
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"UPDATE austin_lots SET geom=subq.geom FROM ( \
@@ -181,7 +186,8 @@ austin_lots.updates: austin_lots.table
 				eligable, \
 				city_owned, \
 				residential, \
-				alderman_hold ) VALUES ( \
+				alderman_hold, \
+				status ) VALUES ( \
 					16084150481001, \
 					134, \
 					'N', \
@@ -193,7 +199,8 @@ austin_lots.updates: austin_lots.table
 					TRUE, \
 					TRUE, \
 					TRUE, \
-					FALSE \
+					FALSE, \
+					0 \
 				)"
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"UPDATE austin_lots SET geom=subq.geom FROM ( \
@@ -206,4 +213,7 @@ austin_lots.updates: austin_lots.table
 	@touch build/austin_lots.updates
 
 austin_lots.shp: austin_lots.updates
-	@pgsql2shp -f finished_files/austin_lots.shp -h $(PG_HOST) -u $(PG_USER) -p $(PG_PORT) $(PG_DB) austin_lots
+	@pgsql2shp -f finished/austin_lots.shp -h $(PG_HOST) -u $(PG_USER) -p $(PG_PORT) $(PG_DB) austin_lots
+
+austin_lots.zip: austin_lots.shp
+	@ls finished/austin_lots.* | zip finished/austin_lots.zip -@ 
