@@ -11,6 +11,8 @@ ALLOWED_HOSTS = [
     '.largelots.org'
 ]
 
+APPLICATION_DISPLAY = False
+
 AWS_STORAGE_BUCKET_NAME = '<bucket_name>'
 AWS_ACCESS_KEY_ID='<key>'
 AWS_SECRET_ACCESS_KEY='<secret>'
@@ -24,3 +26,5 @@ EMAIL_HOST_USER='<SMTP Username>'
 EMAIL_HOST_PASSWORD='<SMTP password>'
 SENTRY_DSN='<Sentry DSN>'
 RAVEN_CONFIG = {'dsn': SENTRY_DSN}
+
+CURRENT_PILOT = "pilot_3_dev"
