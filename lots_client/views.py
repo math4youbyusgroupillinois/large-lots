@@ -105,9 +105,9 @@ def home(request):
 # the application is active between July 1st 12:00am and August 4th 11:59pm
 def application_active():
     chicago_time = timezone.localtime(timezone.now())
-    start_date = timezone.make_aware(datetime(2014, 7, 1, 0, 0),
+    start_date = timezone.make_aware(datetime(2014, 12, 1, 0, 0),
         timezone.get_current_timezone())
-    end_date = timezone.make_aware(datetime(2014, 8, 4, 23, 59),
+    end_date = timezone.make_aware(datetime(2015, 1, 30, 23, 59),
         timezone.get_current_timezone())
     
     # override with configuration setting
