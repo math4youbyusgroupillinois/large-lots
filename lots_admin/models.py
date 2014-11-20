@@ -1,5 +1,6 @@
 from django.db import models
 import time
+from django.conf import settings
 
 class Address(models.Model):
     street = models.CharField(max_length=255)
@@ -13,8 +14,12 @@ class Address(models.Model):
 
 def upload_name(instance, filename):
     now = int(time.time())
-    return 'deeds/%s-%s-%s_%s' % \
-        (instance.first_name, instance.last_name, now, filename)
+    return '{pilot}/deeds/{first_name}-{last_name}-{now}_{filename}'\
+        .format(pilot=settings.CURRENT_PILOT,
+                first_name=instance.first_name, 
+                last_name=instance.last_name, 
+                now=now, 
+                filename=filename)
 
 class Application(models.Model):
     first_name = models.CharField(max_length=255, null=True)
