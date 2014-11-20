@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponseRedirect, HttpResponse
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
@@ -36,8 +37,19 @@ def lots_admin_map(request):
 
 @login_required(login_url='/lots-login/')
 def lots_admin(request):
-    applications = Application.objects.all()
-    return render(request, 'admin.html', {'applications': applications})
+    applications = Application.objects.filter(pilot=settings.CURRENT_PILOT)
+    return render(request, 'admin.html', {
+        'applications': applications, 
+        'selected_pilot': settings.CURRENT_PILOT, 
+        'pilot_info': settings.PILOT_INFO})
+
+@login_required(login_url='/lots-login/')
+def pilot_admin(request, pilot):
+    applications = Application.objects.filter(pilot=pilot)
+    return render(request, 'admin.html', {
+        'applications': applications, 
+        'selected_pilot': pilot, 
+        'pilot_info': settings.PILOT_INFO})
 
 @login_required(login_url='/lots-login/')
 def csv_dump(request):

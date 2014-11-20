@@ -27,4 +27,12 @@ EMAIL_HOST_PASSWORD='<SMTP password>'
 SENTRY_DSN='<Sentry DSN>'
 RAVEN_CONFIG = {'dsn': SENTRY_DSN}
 
+PILOT_INFO = {
+    "pilot_3_dev": {
+        'human_name': 'Austin'
+    }, 
+    'pilot_2': {
+        'human_name': 'East Garfield Park'
+    }
+}
 CURRENT_PILOT = "pilot_3_dev"

@@ -2,6 +2,17 @@
 {% load staticfiles %}
 {% block title %} | Application list {% endblock %}
 {% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <ul class="nav nav-pills">
+            {% for k,v in pilot_info.items %}
+                <li {% if k == selected_pilot %}class='active'{% endif %}>
+                    <a href="{% url 'lots_admin.views.pilot_admin' k %}">{{v.human_name}}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 <h2>Applications Received</h2>
 <p><a href="/lots-admin-map/"><i class='fa fa-map-marker'></i> Map view</a> &nbsp;&nbsp;&nbsp; <a href="{% url 'csv_dump' %}"><i class='fa fa-file-excel-o'></i> Export as CSV</a></p>
 <table id="received" class="table table-striped">
