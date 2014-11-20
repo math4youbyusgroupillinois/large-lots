@@ -72,13 +72,13 @@ var LargeLots = {
           cartodb_logo: false,
           sublayers: [
               {
-                  sql: "select * from egp_parcels where city_owned='T' and residential='T' and alderman_hold != 'T'",
+                  sql: "select * from austin_lots where city_owned='T' and residential='T' and alderman_hold != 'T'",
                   cartocss: $('#egp-styles').html().trim(),
                   interactivity: fields
               },
               {
-                  sql: 'select * from east_garfield_park',
-                  cartocss: "#east_garfield_park{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}"
+                  sql: 'select * from austin_lots',
+                  cartocss: "#austin_lots{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}"
               }
           ]
       }
@@ -126,7 +126,7 @@ var LargeLots = {
               checks.push($(box).attr('id'))
           }
       });
-      var sql = 'select * from egp_parcels where ';
+      var sql = 'select * from austin_lots where ';
       var clauses = []
       if(checks.indexOf('applied') >= 0){
           clauses.push('status = 1')
@@ -138,7 +138,7 @@ var LargeLots = {
           clauses = clauses.join(' or ');
           sql += clauses;
       } else {
-          sql = 'select * from egp_parcels where status not in (0,1)'
+          sql = 'select * from austin_lots where status not in (0,1)'
       }
       LargeLots.lotsLayer.setSQL(sql);
   },
@@ -153,7 +153,7 @@ var LargeLots = {
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from egp_parcels where pin14 = cast({{pin14}} as text)', {pin14:pin14})
+      sql.execute('select * from austin_lots where pin14 = cast({{pin14}} as text)', {pin14:pin14})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
