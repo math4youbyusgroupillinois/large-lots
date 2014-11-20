@@ -2,17 +2,17 @@ var LargeLots = LargeLots || {};
 var LargeLots = {
 
   map: null,
-  map_centroid: [41.8787248907554, -87.7055433591891],
-  defaultZoom: 14,
+  map_centroid: [41.89409955811395, -87.77157783508301],
+  defaultZoom: 13,
   lastClickedLayer: null,
   geojson: null,
   marker: null,
   locationScope: 'chicago',
   boundingBox: {
-    'bottom': 41.868506217235485,
-    'top': 41.891607773180716,
-    'right': -87.68617630004883,
-    'left': -87.7223539352417
+    'bottom': 41.86099561435056,
+    'top': 41.92488743920406,
+    'right': -87.72239685058594,
+    'left': -87.82487869262695
   },
 
   initialize: function() {
@@ -72,12 +72,12 @@ var LargeLots = {
           cartodb_logo: false,
           sublayers: [
               {
-                  sql: "select * from austin_lots where city_owned='T' and residential='T' and alderman_hold != 'T'",
-                  cartocss: $('#egp-styles').html().trim(),
+                  sql: "select * from austin_lots",
+                  cartocss: $('#austin-styles').html().trim(),
                   interactivity: fields
               },
               {
-                  sql: 'select * from austin_lots',
+                  sql: 'select * from austin_shape',
                   cartocss: "#austin_lots{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}"
               }
           ]
@@ -126,7 +126,7 @@ var LargeLots = {
               checks.push($(box).attr('id'))
           }
       });
-      var sql = 'select * from austin_lots where ';
+      var sql = 'select * from austin_lots';
       var clauses = []
       if(checks.indexOf('applied') >= 0){
           clauses.push('status = 1')
@@ -138,7 +138,7 @@ var LargeLots = {
           clauses = clauses.join(' or ');
           sql += clauses;
       } else {
-          sql = 'select * from austin_lots where status not in (0,1)'
+          sql = 'select * from austin_lots'
       }
       LargeLots.lotsLayer.setSQL(sql);
   },
@@ -153,7 +153,7 @@ var LargeLots = {
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from austin_lots where pin14 = cast({{pin14}} as text)', {pin14:pin14})
+      sql.execute('select * from austin_lots where pin14 = {{pin14}}', {pin14:pin14})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
@@ -166,8 +166,9 @@ var LargeLots = {
   },
 
   selectParcel: function (props){
+      console.log(props)
       var address = LargeLots.formatAddress(props);
-      var pin_formatted = LargeLots.formatPin(props.pin14);
+      var pin_formatted = LargeLots.formatPin(props.display_pin);
 
       var info = "<div class='row'><div class='col-xs-6 col-md-12'>\
         <table class='table table-bordered table-condensed'><tbody>\
@@ -185,6 +186,7 @@ var LargeLots = {
       <img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' /></div></div>";
       $.address.parameter('pin', props.pin14)
       $('#lot-info').html(info);
+      console.log(info)
 
       $("#lot_apply").on("click", function(){
         if ($("#id_lot_1_address").val() == "") {
@@ -255,6 +257,7 @@ var LargeLots = {
   },
 
   formatPin: function(pin) {
+    var pin  = String(pin);
     return pin.replace(/(\d{2})(\d{2})(\d{3})(\d{3})(\d{4})/, '$1-$2-$3-$4-$5');
   },
 
