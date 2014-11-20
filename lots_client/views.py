@@ -176,6 +176,7 @@ def apply(request):
                 'email': form.cleaned_data.get('email'),
                 'how_heard': form.cleaned_data.get('how_heard'),
                 'tracking_id': unicode(uuid4()),
+                'pilot': settings.CURRENT_PILOT,
             }
             app = Application(**app_info)
             app.save()

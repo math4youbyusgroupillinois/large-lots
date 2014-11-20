@@ -17,8 +17,6 @@ def lots_login(request):
             if user is not None:
                 login(request, user)
                 return HttpResponseRedirect(reverse('lots_admin.views.lots_admin'))
-        else:
-            print form.errors
     else:
         form = AuthenticationForm()
     return render(request, 'lots_login.html', {'form': form})
