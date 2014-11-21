@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     url(r'^lots-admin/(?P<pilot>\S+)/$', 'lots_admin.views.pilot_admin', name='pilot_admin'),
     url(r'^lots-admin/$', 'lots_admin.views.lots_admin', name='lots_admin'),
     url(r'^lots-admin-map/$', 'lots_admin.views.lots_admin_map', name='lots_admin_map'),
-    url(r'^csv-dump/$', 'lots_admin.views.csv_dump', name='csv_dump'),
+    url(r'^csv-dump/(?P<pilot>\S+)/$', 'lots_admin.views.csv_dump', name='csv_dump'),
     url(r'^lots-login/$', 'lots_admin.views.lots_login', name='lots_login'),
     url(r'^logout/$', 'lots_admin.views.lots_logout', name='logout'),
 

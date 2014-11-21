@@ -52,11 +52,11 @@ def pilot_admin(request, pilot):
         'pilot_info': settings.PILOT_INFO})
 
 @login_required(login_url='/lots-login/')
-def csv_dump(request):
+def csv_dump(request, pilot):
     response = HttpResponse(content_type='text/csv')
     now = datetime.now().isoformat()
-    response['Content-Disposition'] = 'attachment; filename=Large_Lots_Applications_%s.csv' % now
-    applications = Application.objects.all()
+    response['Content-Disposition'] = 'attachment; filename=Large_Lots_Applications_%s_%s.csv' % (pilot, now)
+    applications = Application.objects.filter(pilot=pilot)
     header = [
         'ID', 
         'Date received', 

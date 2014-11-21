@@ -13,8 +13,12 @@
         </ul>
     </div>
 </div>
-<h2>Applications Received</h2>
-<p><a href="/lots-admin-map/"><i class='fa fa-map-marker'></i> Map view</a> &nbsp;&nbsp;&nbsp; <a href="{% url 'csv_dump' %}"><i class='fa fa-file-excel-o'></i> Export as CSV</a></p>
+<h2>
+    Applications Received
+    <small>
+        <!-- <a href="/lots-admin-map/"><i class='fa fa-map-marker'></i> Map view</a> &nbsp;&nbsp;&nbsp;  -->
+        <a href="{% url 'csv_dump' selected_pilot %}"><i class='fa fa-file-excel-o'></i> Export as CSV</a></small>
+</h2>
 <table id="received" class="table table-striped">
     <thead>
         <th>ID</th>

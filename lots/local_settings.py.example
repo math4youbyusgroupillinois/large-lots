@@ -28,11 +28,15 @@ SENTRY_DSN='<Sentry DSN>'
 RAVEN_CONFIG = {'dsn': SENTRY_DSN}
 
 PILOT_INFO = {
-    "pilot_3_dev": {
-        'human_name': 'Austin'
-    }, 
     'pilot_2': {
-        'human_name': 'East Garfield Park'
+        'human_name': 'Pilot 2: East Garfield Park',
+        'parcel_table': 'egp_parcels',
+        'area_table': 'east_garfield_park'
+    },
+    "pilot_3_dev": {
+        'human_name': 'Pilot 3: Austin',
+        'parcel_table': 'austin_lots',
+        'area_table': 'austin_shape'
     }
 }
 CURRENT_PILOT = "pilot_3_dev"

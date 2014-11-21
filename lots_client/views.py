@@ -63,7 +63,7 @@ class ApplicationForm(forms.Form):
         carto = 'http://datamade.cartodb.com/api/v2/sql'
         params = {
             'api_key': settings.CARTODB_API_KEY,
-            'q':  "SELECT pin14 FROM egp_parcels WHERE pin14 = '%s' AND city_owned='T' AND residential='T' AND alderman_hold != 'T'" % pin.replace('-', ''),
+            'q':  "SELECT pin14 FROM austin_lots WHERE pin14 = '%s' AND city_owned='T' AND residential='T' AND alderman_hold != 'T'" % pin.replace('-', ''),
         }
         r = requests.get(carto, params=params)
         if r.status_code == 200:
