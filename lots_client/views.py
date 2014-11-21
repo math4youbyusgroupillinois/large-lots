@@ -19,15 +19,27 @@ from datetime import datetime
 from dateutil import parser
 
 class ApplicationForm(forms.Form):
-    lot_1_address = forms.CharField(
-        error_messages={'required': 'Provide the lot’s address'},
-        label="Lot 1 Address")
+    lot_1_street_number = forms.CharField(
+        error_messages={'required': 'Provide the lot’s street number'},
+        label="Lot 1 Street Number")
+    lot_1_street_dir = forms.CharField(
+        error_messages={'required': 'Provide the lot’s street direction'},
+        label="Lot 1 Street Direction")
+    lot_1_street_name = forms.CharField(
+        error_messages={'required': 'Provide the lot’s street name'},
+        label="Lot 1 Street Name")
+    lot_1_type = forms.CharField(
+        error_messages={'required': 'Provide the lot’s street type'},
+        label="Lot 1 Street Type")
     lot_1_pin = forms.CharField(
         error_messages={
             'required': 'Provide the lot’s Parcel Identification Number'
         },label="Lot 1 PIN")
     lot_1_use = forms.CharField(required=False)
-    lot_2_address = forms.CharField(required=False)
+    lot_2_street_number = forms.CharField(required=False)
+    lot_2_street_dir = forms.CharField(required=False)
+    lot_2_street_name = forms.CharField(required=False)
+    lot_2_street_type = forms.CharField(required=False)
     lot_2_pin = forms.CharField(required=False)
     lot_2_use = forms.CharField(required=False)
     owned_address = forms.CharField(

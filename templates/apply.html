@@ -62,7 +62,7 @@
                 {% csrf_token %}
                 {% if form.errors %}
                     <div id="form-errors" class="row">
-                        <div class="col-md-8">
+                        <div class="col-md-12">
                             <div class="form-group has-error">
                                 <h3>There were some problems with your application: </h3>
                                 {% for label, message in error_messages.items %}
@@ -74,7 +74,7 @@
                     </div>
                 {% endif %}
                 <div class='row'>
-                  <div class='col-md-8'>
+                  <div class='col-md-12'>
                     <div class="panel panel-default" id='selected_lots'>
                       <div class='panel-heading'>
                         Your selected lots:
@@ -185,7 +185,7 @@
                 <div id="application">
 
                   <div class='row'>
-                    <div class='col-md-8'>
+                    <div class='col-md-12'>
                       <div class="well" id="ownership">
                         <h2>2. Proof of ownership on the block</h2>
                         <p><span class="red">*</span>Required</p>
@@ -294,7 +294,7 @@
                   </div>
 
                   <div class='row'>
-                    <div class='col-md-8'>
+                    <div class='col-md-12'>
                       <div class="well" id="personal-info">
                         <h2>3. Contact information</h2>
                         <p><span class="red">*</span>Required</p>
@@ -405,7 +405,7 @@
                   </div>
 
                   <div class='row'>
-                    <div class='col-md-8'>
+                    <div class='col-md-12'>
                       <div id="terms">
                         <h2>4. Eligibility and Terms</h2>
 
