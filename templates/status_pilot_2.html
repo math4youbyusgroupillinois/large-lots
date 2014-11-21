@@ -98,7 +98,8 @@
             defaultZoom: 14,
             tableName: 'egp_parcels',
             mainWhere: " where city_owned='T' and residential='T' and alderman_hold != 'T'",
-            overlayName: 'east_garfield_park'
+            overlayName: 'east_garfield_park',
+            fields: "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type"
         }
         LargeLots.initialize(init_params);
       });

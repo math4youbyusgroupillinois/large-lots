@@ -15,6 +15,7 @@ var LargeLots = {
       LargeLots.tableName = init_params.tableName;
       LargeLots.overlayName = init_params.overlayName;
       LargeLots.mainWhere = init_params.mainWhere;
+      LargeLots.fields = init_params.fields;
       if (!LargeLots.map) {
         LargeLots.map = L.map('map', {
           center: LargeLots.map_centroid,
@@ -60,7 +61,7 @@ var LargeLots = {
 
       LargeLots.info.addTo(LargeLots.map);
       // We'll need to add a status column
-      var fields = "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type,city_owned,residential"
+      var fields = LargeLots.fields;
       var layerOpts = {}
       var mainSQL = 'select * from ' + LargeLots.tableName;
       if (LargeLots.mainWhere){
