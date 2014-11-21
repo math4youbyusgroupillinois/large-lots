@@ -72,7 +72,7 @@ var LargeLots = {
           cartodb_logo: false,
           sublayers: [
               {
-                  sql: "select * from austin_lots",
+                  sql: "select * from austin_lots where city_owned='T' and residential='T' and alderman_hold != 'T'",
                   cartocss: $('#austin-styles').html().trim(),
                   interactivity: fields
               },
