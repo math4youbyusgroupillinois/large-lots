@@ -31,6 +31,21 @@ cook-county-parcels.table: cook-county-parcels.zip
 		"CREATE INDEX county_pin_idx ON cook_county_parcels (PIN14)"
 	@touch build/cook-county-parcels.table
 
+community-areas.zip: 
+	@wget "https://data.cityofchicago.org/api/geospatial/cauq-8yn6?method=export&format=Original" -O raw/$@
+
+ca_shp=$(notdir $(shell ls raw/community-areas/*.shp))
+
+community-areas.table: community-areas.zip
+	@mkdir -p raw/community-areas
+	@unzip -d raw/community-areas -f raw/community-areas.zip
+	@ogr2ogr -overwrite -t_srs EPSG:4326 build/$(ca_shp) raw/community-areas/$(ca_shp)
+	@psql -h $(PG_HOST) -U $(PG_USER) -p $(PG_PORT) -d $(PG_DB) -c \
+		"DROP TABLE IF EXISTS community_areas;"
+	@shp2pgsql -I -s 4326 -d build/$(ca_shp) community_areas | \
+		psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT)
+	@touch build/community-areas.table
+
 land-inventory-parcels.shp: cook-county-parcels.table land-inventory.table
 	@pgsql2shp -f build/land-inventory-parcels.shp -h $(PG_HOST) -u $(PG_USER) -p $(PG_PORT) $(PG_DB) \
 		"SELECT cook_county_parcels.geom, land_inventory.* \
@@ -69,34 +84,67 @@ eligable_lots.table: eligable_lots.csv
 			--db "postgresql://$(PG_USER):@$(PG_HOST):$(PG_PORT)/$(PG_DB)" --table eligable_lots --insert
 	@touch build/eligable_lots.table
 
-austin_lots.table: city-owned-residential-lots.table eligable_lots.table
+austin_lots.table: community-areas.table cook-county-parcels.table
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"DROP TABLE IF EXISTS austin_lots"
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"CREATE TABLE austin_lots AS \
 			SELECT \
-				COALESCE(l.pin14, e.pin14, CAST(p.pin14 AS bigint)) as display_pin, \
-				COALESCE(l.pin14, e.pin14, CAST(p.pin14 AS bigint)) as pin14, \
-				COALESCE(l.street_number, e.street_number) as street_number, \
-				COALESCE(l.dir, e.dir) as dir, \
-				COALESCE(l.street_name, e.street_name) as street_name, \
-				COALESCE(l.type, e.type) as type, \
-				COALESCE(l.sq_ft, cast(p.shape_area as int)) as sq_ft, \
-				COALESCE(l.ward, e.ward) as ward, \
-				l.community_area, \
-				COALESCE(l.zoning_classification, e.zoning_classification) as zoning_classification, \
-				TRUE as eligable, \
-				TRUE as city_owned, \
-				TRUE as residential, \
+				CAST(p.pin14 AS bigint) as display_pin, \
+				CAST(p.pin14 AS bigint) as pin14, \
+				CAST(p.shape_area as int) as sq_ft, \
+				'AUSTIN' as community_area, \
+				FALSE as eligable, \
+				FALSE as city_owned, \
+				FALSE as residential, \
 				FALSE as alderman_hold, \
 				p.geom as geom, \
 				0 as status \
-			FROM eligable_lots AS e \
-			LEFT JOIN city_owned_residential_lots AS l \
-				ON e.pin14 = l.pin14 \
-			JOIN cook_county_parcels p \
-				ON e.pin14 = CAST(p.pin14 AS bigint)"
+			FROM cook_county_parcels AS p \
+			JOIN community_areas as c \
+				ON ST_Within(p.geom, c.geom) \
+			WHERE c.community = 'AUSTIN'"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN street_number int"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN dir varchar"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN street_name varchar"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN type varchar"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN ward varchar"
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"ALTER TABLE austin_lots ADD COLUMN zoning_classification varchar"
 	@touch build/austin_lots.table
+
+austin_lots.defaults: austin_lots.table
+	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
+		"UPDATE austin_lots SET \
+			street_number=s.street_number, \
+			dir=s.dir, \
+			street_name=s.street_name, \
+			type=s.type, \
+			ward=s.ward, \
+			zoning_classification=s.zoning_classification, \
+			eligable=TRUE, \
+			city_owned=TRUE, \
+			residential=TRUE, \
+			status=0 FROM ( \
+				SELECT \
+					COALESCE(l.pin14, e.pin14) as pin14, \
+					COALESCE(l.street_number, e.street_number) as street_number, \
+					COALESCE(l.dir, e.dir) as dir, \
+					COALESCE(l.street_name, e.street_name) as street_name, \
+					COALESCE(l.type, e.type) as type, \
+					COALESCE(l.ward, e.ward) as ward, \
+					COALESCE(l.zoning_classification, e.zoning_classification) as zoning_classification \
+				FROM eligable_lots AS e \
+				LEFT JOIN city_owned_residential_lots AS l \
+					ON e.pin14 = l.pin14 \
+			) as s \
+			WHERE austin_lots.pin14 = s.pin14"
+	@touch build/austin_lots.defaults
 
 austin_lots.updates: austin_lots.table
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
