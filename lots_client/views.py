@@ -17,29 +17,18 @@ from uuid import uuid4
 from collections import OrderedDict
 from datetime import datetime
 from dateutil import parser
+import usaddress
 
 class ApplicationForm(forms.Form):
-    lot_1_street_number = forms.CharField(
-        error_messages={'required': 'Provide the lot’s street number'},
-        label="Lot 1 Street Number")
-    lot_1_street_dir = forms.CharField(
-        error_messages={'required': 'Provide the lot’s street direction'},
-        label="Lot 1 Street Direction")
-    lot_1_street_name = forms.CharField(
-        error_messages={'required': 'Provide the lot’s street name'},
-        label="Lot 1 Street Name")
-    lot_1_type = forms.CharField(
-        error_messages={'required': 'Provide the lot’s street type'},
-        label="Lot 1 Street Type")
+    lot_1_address = forms.CharField(
+        error_messages={'required': 'Provide the lot’s street address'},
+        label="Lot 1 Street address")
     lot_1_pin = forms.CharField(
         error_messages={
             'required': 'Provide the lot’s Parcel Identification Number'
         },label="Lot 1 PIN")
     lot_1_use = forms.CharField(required=False)
-    lot_2_street_number = forms.CharField(required=False)
-    lot_2_street_dir = forms.CharField(required=False)
-    lot_2_street_name = forms.CharField(required=False)
-    lot_2_street_type = forms.CharField(required=False)
+    lot_2_address = forms.CharField(required=False)
     lot_2_pin = forms.CharField(required=False)
     lot_2_use = forms.CharField(required=False)
     owned_address = forms.CharField(
@@ -131,8 +120,17 @@ def application_active():
         return False
 
 def get_lot_address(address):
+    parsed = usaddress.parse(address)
+    street_number = ' '.join([p[0] for p in parsed if p[1] == 'AddressNumber'])
+    street_dir = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePreDirectional'])
+    street_name = ' '.join([p[0] for p in parsed if p[1] == 'StreetName'])
+    street_type = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePostType'])
     add_info = {
         'street': address,
+        'street_number': street_number,
+        'street_dir': street_dir,
+        'street_name': street_name,
+        'street_type': street_type,
         'city': 'Chicago',
         'state': 'IL',
         'zip_code': '',
@@ -144,7 +142,9 @@ def apply(request):
     if request.method == 'POST':
         form = ApplicationForm(request.POST, request.FILES)
         context = {}
+        address_parts = ['street_number', 'street_dir', 'street_name', 'street_type']
         if form.is_valid():
+            
             l1_address = get_lot_address(form.cleaned_data['lot_1_address'])
             lot1_info = {
                 'pin': form.cleaned_data['lot_1_pin'],
