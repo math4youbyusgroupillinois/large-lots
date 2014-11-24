@@ -35,6 +35,10 @@ class ApplicationForm(forms.Form):
         error_messages={
             'required': 'Provide the address of the building you own'
         }, label="Owned property address")
+    owned_pin = forms.CharField(
+        error_messages={
+            'required': 'Provide the Parcel Identification Number for the property you own'
+        },label="Owned PIN")
     deed_image = forms.FileField(
         error_messages={'required': 'Provide an image of the deed of the building you own'
         }, label="Electronic version of your deed")
@@ -92,6 +96,14 @@ class ApplicationForm(forms.Form):
         if self.cleaned_data['lot_2_pin']:
             return self._clean_pin('lot_2_pin')
         return self.cleaned_data['lot_2_pin']
+    
+    def clean_owned_pin(self):
+        pin = self.cleaned_data['owned_pin']
+        pattern = re.compile('[^0-9]')
+        if len(pattern.sub('', pin)) != 14:
+            raise forms.ValidationError('Please provide a valid PIN')
+        else:
+            return pin
 
     def clean_deed_image(self):
         image = self.cleaned_data['deed_image']._get_name()
@@ -119,18 +131,36 @@ def application_active():
     else:
         return False
 
-def get_lot_address(address):
+def get_lon_lat(pin):
+    carto = 'http://datamade.cartodb.com/api/v2/sql'
+    params = {
+        'api_key': settings.CARTODB_API_KEY,
+        'q':  "SELECT longitude, latitude FROM austin_lots WHERE pin14 = '%s'" % \
+            unicode(pin).replace('-', ''),
+    }
+    r = requests.get(carto, params=params)
+    longitude, latitude = None, None
+    if r.status_code is 200:
+        resp = r.json()['rows']
+        if resp:
+            longitude, latitude = resp[0]['longitude'], resp[0]['latitude']
+    return longitude, latitude
+
+def get_lot_address(address, pin):
     parsed = usaddress.parse(address)
     street_number = ' '.join([p[0] for p in parsed if p[1] == 'AddressNumber'])
     street_dir = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePreDirectional'])
     street_name = ' '.join([p[0] for p in parsed if p[1] == 'StreetName'])
     street_type = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePostType'])
+    longitude, latitude = get_lon_lat(pin)
     add_info = {
         'street': address,
         'street_number': street_number,
         'street_dir': street_dir,
         'street_name': street_name,
         'street_type': street_type,
+        'longitude': longitude,
+        'latitude': latitude,
         'city': 'Chicago',
         'state': 'IL',
         'zip_code': '',
@@ -144,8 +174,8 @@ def apply(request):
         context = {}
         address_parts = ['street_number', 'street_dir', 'street_name', 'street_type']
         if form.is_valid():
-            
-            l1_address = get_lot_address(form.cleaned_data['lot_1_address'])
+            l1_address = get_lot_address(form.cleaned_data['lot_1_address'], 
+                                         form.cleaned_data['lot_1_pin'])
             lot1_info = {
                 'pin': form.cleaned_data['lot_1_pin'],
                 'address': l1_address,
@@ -158,7 +188,8 @@ def apply(request):
                 lot1.save()
             lot2 = None
             if form.cleaned_data.get('lot_2_pin'):
-                l2_address = get_lot_address(form.cleaned_data['lot_2_address'])
+                l2_address = get_lot_address(form.cleaned_data['lot_2_address'],
+                                             form.cleaned_data['lot_2_pin'])
                 lot2_info = {
                     'pin': form.cleaned_data['lot_2_pin'],
                     'address': l2_address,
@@ -176,12 +207,14 @@ def apply(request):
                 'zip_code': form.cleaned_data['contact_zip_code']
             }
             c_address, created = Address.objects.get_or_create(**c_address_info)
-            owned_address = get_lot_address(form.cleaned_data['owned_address'])
+            owned_address = get_lot_address(form.cleaned_data['owned_address'],
+                                            form.cleaned_data['owned_pin'])
             app_info = {
                 'first_name': form.cleaned_data['first_name'],
                 'last_name': form.cleaned_data['last_name'],
                 'organization': form.cleaned_data.get('organization'),
                 'owned_address': owned_address,
+                'owned_pin': form.cleaned_data['owned_pin'],
                 'deed_image': form.cleaned_data['deed_image'],
                 'contact_address': c_address,
                 'phone': form.cleaned_data['phone'],
@@ -226,6 +259,7 @@ def apply(request):
             context['lot_2_pin'] = form['lot_2_pin'].value()
             context['lot_2_use'] = form['lot_2_use'].value()
             context['owned_address'] = form['owned_address'].value()
+            context['owned_pin'] = form['owned_pin'].value()
             context['deed_image'] = form['deed_image'].value()
             context['first_name'] = form['first_name'].value()
             context['last_name'] = form['last_name'].value()
