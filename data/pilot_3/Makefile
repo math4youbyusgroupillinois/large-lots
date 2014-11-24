@@ -148,7 +148,7 @@ austin_lots.defaults: austin_lots.table
 			WHERE austin_lots.pin14 = s.pin14"
 	@touch build/austin_lots.defaults
 
-austin_lots.updates: austin_lots.table
+austin_lots.updates: austin_lots.defaults
 	@psql -d $(PG_DB) -U $(PG_USER) -h $(PG_HOST) -p $(PG_PORT) -c \
 		"INSERT INTO austin_lots ( \
 				display_pin, \
