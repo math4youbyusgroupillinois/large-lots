@@ -326,10 +326,15 @@ def get_pin_from_address(request):
             'unit_number': unit_number
         }
 
+        response['source_url'] = 'http://cookcountypropertyinfo.com/Pages/Address-Results.aspx?hnum=%s&dir=%s&sname=%s&city=Chicago&zip=&unit=%s' % (street_number, street_dir, street_name, unit_number)
+
         # http://cookcountypropertyinfo.com/Pages/Address-Results.aspx?hnum=444&sname=Wabash&city=Chicago&zip=&unit=&dir=N
-        property_page = requests.get('http://cookcountypropertyinfo.com/Pages/Address-Results.aspx?hnum=%s&dir=%s&sname=%s&city=Chicago&zip=&unit=%s' % (street_number, street_dir, street_name, unit_number))
+        property_page = requests.get(response['source_url'])
         if property_page.status_code is 200:
             found_pins = list(set(re.findall('\d{2}-\d{2}-\d{3}-\d{3}-\d{4}', property_page.content)))
-            response['found_pins'] = found_pins
+            if found_pins:
+                response['found_pins'] = found_pins
+            else:
+                response['found_pins'] = 'Not found'
 
     return HttpResponse(json.dumps(response), mimetype="application/json") 
