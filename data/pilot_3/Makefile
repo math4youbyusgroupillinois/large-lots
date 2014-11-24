@@ -99,6 +99,8 @@ austin_lots.table: community-areas.table cook-county-parcels.table
 				FALSE as residential, \
 				FALSE as alderman_hold, \
 				p.geom as geom, \
+				ST_X(ST_Centroid(p.geom)) as longitude, \
+				ST_Y(ST_Centroid(p.geom)) as latitude, \
 				0 as status \
 			FROM cook_county_parcels AS p \
 			JOIN community_areas as c \
