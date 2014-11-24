@@ -1,32 +1,30 @@
 var LargeLots = LargeLots || {};
 var LargeLots = {
-
   map: null,
-  map_centroid: [41.8787248907554, -87.7055433591891],
-  defaultZoom: 14,
   lastClickedLayer: null,
   geojson: null,
   marker: null,
-  locationScope: 'chicago',
-  boundingBox: {
-    'bottom': 41.868506217235485,
-    'top': 41.891607773180716,
-    'right': -87.68617630004883,
-    'left': -87.7223539352417
-  },
+  locationScope: 'Chicago',
 
-  initialize: function() {
-
+  initialize: function(init_params) {
+      LargeLots.defaultZoom = init_params.defaultZoom;
+      LargeLots.map_centroid = init_params.map_centroid;
+      LargeLots.boundaryCartocss = init_params.boundaryCartocss;
+      LargeLots.parcelsCartocss = init_params.parcelsCartocss;
+      LargeLots.boundingBox = init_params.boundingBox;
+      LargeLots.tableName = init_params.tableName;
+      LargeLots.overlayName = init_params.overlayName;
+      LargeLots.mainWhere = init_params.mainWhere;
+      LargeLots.fields = init_params.fields;
       if (!LargeLots.map) {
         LargeLots.map = L.map('map', {
           center: LargeLots.map_centroid,
           zoom: LargeLots.defaultZoom,
-          scrollWheelZoom: false,
-          tapTolerance: 30
+          scrollWheelZoom: false
         });
       }
       // render a map!
-      L.Icon.Default.imagePath = '/static/images/'
+      L.Icon.Default.imagePath = '/images/'
 
       L.tileLayer('https://{s}.tiles.mapbox.com/v3/datamade.hn83a654/{z}/{x}/{y}.png', {
           attribution: '<a href="http://www.mapbox.com/about/maps/" target="_blank">Terms &amp; Feedback</a>'
@@ -44,16 +42,14 @@ var LargeLots = {
       LargeLots.info.update = function (props) {
         var date_formatted = '';
         if (props) {
-          var info = '';
-          if(props.street_number){
-              info += "<h4>" + LargeLots.formatAddress(props) + "</h4>";
-              info += "<p>PIN: " + props.pin14 + "<br />";
-          }
-          if (props.zoning_classification){
-              info += "Zoned: " + props.zoning_classification + "<br />";
-          }
-          if (props.sq_ft){
-              info += "Sq Ft: " + props.sq_ft + "<br />";
+          var info = "<h4>" + LargeLots.formatAddress(props) + "</h4>";
+          info += "<p>PIN: " + props.pin14 + "<br />";
+          info += "Zoned: " + props.zoning_classification + "<br />";
+          info += "Sq Ft: " + props.sq_ft + "<br />";
+          if (props.status == 1){
+              info += "Status: <strong>Application received</strong></p>"
+          } else {
+              info += "Status: <strong>Available</strong></p>"
           }
           this._div.innerHTML  = info;
         }
@@ -64,28 +60,31 @@ var LargeLots = {
       }
 
       LargeLots.info.addTo(LargeLots.map);
-
-      var fields = "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type,city_owned,residential"
+      // We'll need to add a status column
+      var fields = LargeLots.fields;
+      var layerOpts = {}
+      var mainSQL = 'select * from ' + LargeLots.tableName;
+      if (LargeLots.mainWhere){
+          mainSQL = mainSQL + LargeLots.mainWhere;
+      }
       var layerOpts = {
           user_name: 'datamade',
           type: 'cartodb',
           cartodb_logo: false,
-          sublayers: [
-              {
-                  sql: "select * from egp_parcels where city_owned='T' and residential='T' and alderman_hold != 'T'",
-                  cartocss: $('#egp-styles').html().trim(),
+          sublayers: [{
+                  sql: mainSQL,
+                  cartocss: LargeLots.parcelsCartocss,
                   interactivity: fields
               },
               {
-                  sql: 'select * from east_garfield_park',
-                  cartocss: "#east_garfield_park{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}"
-              }
-          ]
+                  sql: 'select * from ' + LargeLots.overlayName,
+                  cartocss: LargeLots.boundaryCartocss
+              }]
       }
       cartodb.createLayer(LargeLots.map, layerOpts)
         .addTo(LargeLots.map)
         .done(function(layer) {
-            LargeLots.lotsLayer = layer.getSubLayer(0);
+            LargeLots.lotsLayer = layer.getSubLayer(0)
             LargeLots.lotsLayer.setInteraction(true);
             LargeLots.lotsLayer.on('featureOver', function(e, latlng, pos, data, subLayerIndex) {
               $('#map div').css('cursor','pointer');
@@ -104,8 +103,8 @@ var LargeLots = {
                 }
             }, 1000)
         }).error(function(e) {
-        //console.log('ERROR')
-        //console.log(e)
+            console.log('ERROR')
+            console.log(e)
       });
       $("#search_address").val(LargeLots.convertToPlainString($.address.parameter('address')));
       LargeLots.addressSearch();
@@ -126,10 +125,10 @@ var LargeLots = {
               checks.push($(box).attr('id'))
           }
       });
-      var sql = 'select * from egp_parcels where ';
+      var sql = 'select * from lots_with_status where ';
       var clauses = []
       if(checks.indexOf('applied') >= 0){
-          clauses.push('status = 1')
+          clauses.push('status = 2')
       }
       if(checks.indexOf('available') >= 0){
           clauses.push('status = 0')
@@ -138,14 +137,20 @@ var LargeLots = {
           clauses = clauses.join(' or ');
           sql += clauses;
       } else {
-          sql = 'select * from egp_parcels where status not in (0,1)'
+          sql = 'select * from lots_with_status where status not in (0,1,2)'
       }
       LargeLots.lotsLayer.setSQL(sql);
   },
 
+  checkZone: function (ZONING_CLA, value) {
+    if (ZONING_CLA.indexOf(value) != -1)
+      return true;
+    else
+      return false;
+  },
+
   formatAddress: function (prop) {
-    if (prop.street_type == null) prop.street_type = "";
-    return prop.street_number + " " + prop.street_dir + " " + prop.street_name + " " + prop.street_type;
+    return prop.street_number + " " + prop.dir + " " + prop.street_name + " " + prop.type;
   },
 
   getOneParcel: function(pin14){
@@ -153,7 +158,7 @@ var LargeLots = {
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from egp_parcels where pin14 = cast({{pin14}} as text)', {pin14:pin14})
+      sql.execute('select * from lots_with_status where pin14 = {{pin14}}', {pin14:pin14})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
@@ -161,80 +166,78 @@ var LargeLots = {
             LargeLots.lastClickedLayer.setStyle({fillColor:'#f7fcb9', weight: 2, fillOpacity: 1, color: '#000'});
             LargeLots.map.setView(LargeLots.lastClickedLayer.getBounds().getCenter(), 17);
             LargeLots.selectParcel(shape.properties);
-        }).error(function(e){console.log(e)});
-      window.location.hash = 'browse';
+        });
   },
 
   selectParcel: function (props){
       var address = LargeLots.formatAddress(props);
-      var pin_formatted = LargeLots.formatPin(props.pin14);
-
-      var info = "<div class='row'><div class='col-xs-6 col-md-12'>\
+      var zoning = LargeLots.getZoning(props.zoning_classification);
+      var status = 'Not applied for';
+      var status_class = 'available';
+      if (props.status == 1){
+          status = 'Application received';
+          status_class = 'applied';
+      }
+      var info = "<p>Selected lot: </p><img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' />\
         <table class='table table-bordered table-condensed'><tbody>\
           <tr><td>Address</td><td>" + address + "</td></tr>\
-          <tr><td>PIN</td><td>" + pin_formatted + " (<a target='_blank' href='http://cookcountypropertyinfo.com/Pages/PIN-Results.aspx?PIN=" + props.pin14 + "'>info</a>)</td></tr>";
-      if (props.zoning_classification){
-          info += "<tr><td>Zoned</td><td> Residential (<a href='http://secondcityzoning.org/zone/" + props.zoning_classification + "' target='_blank'>" + props.zoning_classification + "</a>)</td></tr>";
-      }
-      if (props.sq_ft){
-          info += "<tr><td>Sq ft</td><td>" + LargeLots.addCommas(props.sq_ft) + "</td></tr>";
-
-      }
-      info += "<tr><td colspan='2'><button type='button' id='lot_apply' data-pin='" + pin_formatted + "' data-address='" + address + "' href='#' class='btn btn-success'>Select this lot</button></td></tr>"
-      info += "</tbody></table></div><div class='col-xs-6 col-md-12'>\
-      <img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' /></div></div>";
+          <tr><td>PIN</td><td>" + props.pin14 + "</td></tr>\
+          <tr><td>&nbsp;</td><td><a target='_blank' href='http://cookcountypropertyinfo.com/Pages/PIN-Results.aspx?PIN=" + props.pin14 + "'>Tax and deed history &raquo;</a></td></tr>\
+          <tr><td>Zoned</td><td> Residential (<a href='http://secondcityzoning.org/zone/" + props.zoning_classification + "' target='_blank'>" + props.zoning_classification + "</a>)</td></tr>\
+          <tr><td>Sq ft</td><td>" + props.sq_ft + "</td></tr>\
+          <tr><td>Status</td><td><span class='label label-" + status_class + "'>" + status + "</span></td></tr>\
+        </tbody></table>";
       $.address.parameter('pin', props.pin14)
       $('#lot-info').html(info);
+  },
 
-      $("#lot_apply").on("click", function(){
-        if ($("#id_lot_1_address").val() == "") {
-          $("#id_lot_1_address").val($(this).data('address'));
-          $("#id_lot_1_pin").val($(this).data('pin'));
-        }
-        else if ($("#id_lot_1_address").val() != $(this).data('address')){
-          $("#id_lot_2_address").val($(this).data('address'));
-          $("#id_lot_2_pin").val($(this).data('pin'));
-        }
-
-        $(this).html("<i class='fa fa-check'></i> Selected");
-        $("#selected_lots").ScrollTo({offsetTop: "70px", 'axis':'y'});
-      });
+  getZoning: function(code){
+      var zone_type = code.split('-')[0];
+      var text = '';
+      if (zone_type == 'RS'){
+          text = 'Single family home'
+      }
+      if (zone_type == 'RT'){
+          text = 'Two-flat, townhouse'
+      }
+      if (zone_type == 'RM'){
+          text = 'Medium-density apartment'
+      }
+      return text;
   },
 
   addressSearch: function (e) {
     if (e) e.preventDefault();
-    var searchAddress = $("#search_address").val();
-    if (searchAddress != '') {
+    var searchRadius = $("#search_address").val();
+    if (searchRadius != '') {
 
-      var searchAddress = searchAddress.toLowerCase();
-      searchAddress = searchAddress.replace(" n ", " north ");
-      searchAddress = searchAddress.replace(" s ", " south ");
-      searchAddress = searchAddress.replace(" e ", " east ");
-      searchAddress = searchAddress.replace(" w ", " west ");
-
-      $("#id_owned_address").val(searchAddress.replace((", " + LargeLots.locationScope), ""));
+      var raw_address = $("#search_address").val().toLowerCase();
+      raw_address = raw_address.replace(" n ", " north ");
+      raw_address = raw_address.replace(" s ", " south ");
+      raw_address = raw_address.replace(" e ", " east ");
+      raw_address = raw_address.replace(" w ", " west ");
 
       if(LargeLots.locationScope && LargeLots.locationScope.length){
-        var checkaddress = searchAddress.toLowerCase();
+        var checkaddress = raw_address.toLowerCase();
         var checkcity = LargeLots.locationScope.split(",")[0].toLowerCase();
         if(checkaddress.indexOf(checkcity) == -1){
-          searchAddress += ", " + LargeLots.locationScope;
+          raw_address += ", " + LargeLots.locationScope;
         }
       }
 
-      $.address.parameter('address', encodeURIComponent(searchAddress));
+      $.address.parameter('address', encodeURIComponent(raw_address));
 
       var s = document.createElement("script");
       s.type = "text/javascript";
-      s.src = "http://nominatim.openstreetmap.org/search/" + encodeURIComponent(searchAddress) + "?format=json&bounded=1&viewbox=" + LargeLots.boundingBox['left'] + "," + LargeLots.boundingBox['top'] + "," + LargeLots.boundingBox['right'] + "," + LargeLots.boundingBox['bottom'] + "&json_callback=LargeLots.returnAddress";
+      s.src = "http://nominatim.openstreetmap.org/search/" + encodeURIComponent(raw_address) + "?format=json&bounded=1&viewbox=" + LargeLots.boundingBox['left'] + "," + LargeLots.boundingBox['top'] + "," + LargeLots.boundingBox['right'] + "," + LargeLots.boundingBox['bottom'] + "&json_callback=LargeLots.returnAddress";
       document.body.appendChild(s);
       //&bounded=1&viewbox=" + LargeLots.boundingBox['left'] + "," + LargeLots.boundingBox['top'] + "," + LargeLots.boundingBox['right'] + "," + LargeLots.boundingBox['bottom'] + "
     }
   },
 
   returnAddress: function (response){
+
     if(!response.length){
-      $('#addr_search_modal').html(LargeLots.convertToPlainString($.address.parameter('address')));
       $('#modalGeocode').modal('show');
       return;
     }
@@ -254,26 +257,10 @@ var LargeLots = {
     LargeLots.marker = L.marker([first.lat, first.lon]).addTo(LargeLots.map);
   },
 
-  formatPin: function(pin) {
-    return pin.replace(/(\d{2})(\d{2})(\d{3})(\d{3})(\d{4})/, '$1-$2-$3-$4-$5');
-  },
-
   //converts a slug or query string in to readable text
   convertToPlainString: function (text) {
     if (text == undefined) return '';
     return decodeURIComponent(text);
-  },
-
-  addCommas: function(nStr) {
-    nStr += '';
-    x = nStr.split('.');
-    x1 = x[0];
-    x2 = x.length > 1 ? '.' + x[1] : '';
-    var rgx = /(\d+)(\d{3})/;
-    while (rgx.test(x1)) {
-      x1 = x1.replace(rgx, '$1' + ',' + '$2');
-    }
-    return x1 + x2;
   }
 
 }
