@@ -21,5 +21,8 @@ urlpatterns = patterns('',
     url(r'^lots-login/$', 'lots_admin.views.lots_login', name='lots_login'),
     url(r'^logout/$', 'lots_admin.views.lots_logout', name='logout'),
 
+    # api endpoints
+    url(r'^api/get-pin$', 'lots_client.views.get_pin_from_address', name='get_pin_from_address'),
+
     url(r'^django-admin/', include(admin.site.urls)),
 )

@@ -146,12 +146,19 @@ def get_lon_lat(pin):
             longitude, latitude = resp[0]['longitude'], resp[0]['latitude']
     return longitude, latitude
 
-def get_lot_address(address, pin):
+def parse_address(address):
     parsed = usaddress.parse(address)
+
     street_number = ' '.join([p[0] for p in parsed if p[1] == 'AddressNumber'])
     street_dir = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePreDirectional'])
     street_name = ' '.join([p[0] for p in parsed if p[1] == 'StreetName'])
     street_type = ' '.join([p[0] for p in parsed if p[1] == 'StreetNamePostType'])
+    unit_number = ' '.join([p[0] for p in parsed if p[1] == 'OccupancyIdentifier'])
+
+    return (street_number, street_dir, street_name, street_type, unit_number)
+
+def get_lot_address(address, pin):
+    (street_number, street_dir, street_name, street_type, unit_number) = parse_address(address)
     longitude, latitude = get_lon_lat(pin)
     add_info = {
         'street': address,
@@ -304,3 +311,25 @@ def faq(request):
 
 def about(request):
     return render(request, 'about.html')
+
+def get_pin_from_address(request):
+
+    address = request.GET.get('address', '')
+    response = {'status': 'ok', 'address': address, 'found_pins': 'Not found'}
+
+    if address != '':
+        (street_number, street_dir, street_name, street_type, unit_number) = parse_address(address)
+        response['address_components'] = {
+            'street_number': street_number, 
+            'street_direction': street_dir, 
+            'street_name': street_name,
+            'unit_number': unit_number
+        }
+
+        # http://cookcountypropertyinfo.com/Pages/Address-Results.aspx?hnum=444&sname=Wabash&city=Chicago&zip=&unit=&dir=N
+        property_page = requests.get('http://cookcountypropertyinfo.com/Pages/Address-Results.aspx?hnum=%s&dir=%s&sname=%s&city=Chicago&zip=&unit=%s' % (street_number, street_dir, street_name, unit_number))
+        if property_page.status_code is 200:
+            found_pins = list(set(re.findall('\d{2}-\d{2}-\d{3}-\d{3}-\d{4}', property_page.content)))
+            response['found_pins'] = found_pins
+
+    return HttpResponse(json.dumps(response), mimetype="application/json") 
