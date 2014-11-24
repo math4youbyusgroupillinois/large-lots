@@ -189,11 +189,11 @@ var LargeLots = {
       console.log(info)
 
       $("#lot_apply").on("click", function(){
-        if ($("#id_lot_1_address").val() == "") {
+        if ($("#id_lot_1_pin").val() == "") {
           $("#id_lot_1_address").val($(this).data('address'));
           $("#id_lot_1_pin").val($(this).data('pin'));
         }
-        else if ($("#id_lot_1_address").val() != $(this).data('address')){
+        else if ($("#id_lot_1_pin").val() != $(this).data('pin')){
           $("#id_lot_2_address").val($(this).data('address'));
           $("#id_lot_2_pin").val($(this).data('pin'));
         }
