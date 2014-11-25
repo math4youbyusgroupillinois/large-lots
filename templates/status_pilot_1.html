@@ -26,7 +26,7 @@
               <div class='col-md-9'>
                 <p>The Englewood pilot ended on <strong>April 21st, 2014</strong> and <strong>414 applications</strong> for lots were received.</p>
 
-                <p>On August 21st, 2014, the sale of <strong>317 properties</strong> was approved by the <a href='http://www.cityofchicago.org/city/en/depts/dcd/supp_info/chicago_plan_commission.html'>Chicago Plan Commission</a>. Closings are anticipated for late fall,  pending City Council approval.</p>
+                <p>On August 21st, 2014, the <a href='http://www.cityofchicago.org/city/en/depts/dcd/supp_info/chicago_plan_commission.html'>Chicago Plan Commission</a> approved the sale of <strong>320 properties</strong>. On November 5th, 2014, <a href='http://www.cityofchicago.org/city/en/about/council.html'>Chicago City Council</a> passed an ordinance approving the final sale (<a href='https://chicago.legistar.com/View.ashx?M=F&ID=3279643&GUID=AF8D3692-1A52-4931-871B-24419313126E'>read the ordinance</a>).</p>
 
                 <p>Browse the map or enter your address below to see what lots have been <strong class='closed'>applied for and approved</strong> by the Chicago Plan Commission.</p>
               </div>
@@ -104,7 +104,7 @@
             },
             tableName: 'lots_with_status',
             mainWhere: " where status = 2",
-            overlayName: 'large_lot_boundary',
+            overlayName: "chicago_community_areas WHERE community = 'PILOT 1 AREA'",
             fields: "pin14,zoning_classification,ward,street_name,dir,street_number,type"
         }
         LargeLots.initialize(init_params);

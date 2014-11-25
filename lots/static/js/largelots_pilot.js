@@ -77,7 +77,7 @@ var LargeLots = {
                   interactivity: fields
               },
               {
-                  sql: "select * from commareas where community = 'AUSTIN'",
+                  sql: "select * from chicago_community_areas where community = 'AUSTIN'",
                   cartocss: "#austin_lots{polygon-fill: #ffffcc;polygon-opacity: 0.2;line-color: #FFF;line-width: 3;line-opacity: 1;}"
               }
           ]

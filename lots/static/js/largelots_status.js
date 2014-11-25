@@ -125,7 +125,7 @@ var LargeLots = {
               checks.push($(box).attr('id'))
           }
       });
-      var sql = 'select * from lots_with_status where ';
+      var sql = 'select * from ' + LargeLots.tableName + ' where ';
       var clauses = []
       if(checks.indexOf('applied') >= 0){
           clauses.push('status = 2')
@@ -137,7 +137,7 @@ var LargeLots = {
           clauses = clauses.join(' or ');
           sql += clauses;
       } else {
-          sql = 'select * from lots_with_status where status not in (0,1,2)'
+          sql = 'select * from ' + LargeLots.tableName + ' where status not in (0,1,2)'
       }
       LargeLots.lotsLayer.setSQL(sql);
   },
@@ -158,7 +158,7 @@ var LargeLots = {
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from lots_with_status where pin14 = {{pin14}}', {pin14:pin14})
+      sql.execute('select * from {{table}} where pin14 = {{pin14}}', {table:LargeLots.tableName, pin14:pin14})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
