@@ -113,20 +113,21 @@ class ApplicationForm(forms.Form):
         return self.cleaned_data['deed_image']
 
 def home(request):
-    return render(request, 'index.html', {'application_active': application_active()})
+    return render(request, 'index.html', {'application_active': application_active(request)})
 
 # the application is active between July 1st 12:00am and August 4th 11:59pm
-def application_active():
+def application_active(request):
     chicago_time = timezone.localtime(timezone.now())
     start_date = timezone.make_aware(datetime(2014, 12, 1, 0, 0),
         timezone.get_current_timezone())
     end_date = timezone.make_aware(datetime(2015, 1, 30, 23, 59),
         timezone.get_current_timezone())
     
-    # override with configuration setting
-    if settings.APPLICATION_DISPLAY:
+    if settings.APPLICATION_DISPLAY: # override with configuration setting
         return True
-    elif start_date < chicago_time < end_date:
+    elif request.user.is_authenticated(): # or if you're logged in
+        return True
+    elif start_date < chicago_time < end_date: # otherwise, check the dates
         return True
     else:
         return False
@@ -289,7 +290,7 @@ def apply(request):
                     context['error_messages'][label] = form.errors[field][0]
             return render(request, 'apply.html', context)
     else:
-        if application_active():
+        if application_active(request):
             form = ApplicationForm()
         else:
             form = None
