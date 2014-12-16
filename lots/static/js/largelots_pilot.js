@@ -166,7 +166,7 @@ var LargeLots = {
   },
 
   selectParcel: function (props){
-      console.log(props)
+      // console.log(props)
       var address = LargeLots.formatAddress(props);
       var pin_formatted = LargeLots.formatPin(props.display_pin);
 
@@ -186,7 +186,7 @@ var LargeLots = {
       <img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' /></div></div>";
       $.address.parameter('pin', props.pin14)
       $('#lot-info').html(info);
-      console.log(info)
+      // console.log(info)
 
       $("#lot_apply").on("click", function(){
         if ($("#id_lot_1_pin").val() == "") {
