@@ -14,6 +14,11 @@
     </div>
 </div>
 <h2>
+    {% if applications %} 
+        {{ applications|length }}
+    {% else %}
+        0
+    {% endif %}
     Applications Received
     <small>
         <!-- <a href="/lots-admin-map/"><i class='fa fa-map-marker'></i> Map view</a> &nbsp;&nbsp;&nbsp;  -->
