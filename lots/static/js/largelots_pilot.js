@@ -47,7 +47,7 @@ var LargeLots = {
           var info = '';
           if(props.street_number){
               info += "<h4>" + LargeLots.formatAddress(props) + "</h4>";
-              info += "<p>PIN: " + props.pin14 + "<br />";
+              info += "<p>PIN: " + props.display_pin + "<br />";
           }
           if (props.zoning_classification){
               info += "Zoned: " + props.zoning_classification + "<br />";
@@ -65,7 +65,7 @@ var LargeLots = {
 
       LargeLots.info.addTo(LargeLots.map);
 
-      var fields = "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type,city_owned,residential"
+      var fields = "display_pin,zoning_classification,ward,street_name,street_dir,street_number,street_type,city_owned,residential"
       var layerOpts = {
           user_name: 'datamade',
           type: 'cartodb',
@@ -96,7 +96,7 @@ var LargeLots = {
               LargeLots.info.clear();
             });
             LargeLots.lotsLayer.on('featureClick', function(e, pos, latlng, data){
-                LargeLots.getOneParcel(data['pin14']);
+                LargeLots.getOneParcel(data['display_pin']);
             });
             window.setTimeout(function(){
                 if($.address.parameter('pin')){
@@ -148,12 +148,12 @@ var LargeLots = {
     return prop.street_number + " " + prop.street_dir + " " + prop.street_name + " " + prop.street_type;
   },
 
-  getOneParcel: function(pin14){
+  getOneParcel: function(display_pin){
       if (LargeLots.lastClickedLayer){
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from austin_lots where pin14 = {{pin14}}', {pin14:pin14})
+      sql.execute('select * from austin_lots where display_pin = {{display_pin}}', {display_pin:display_pin})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
@@ -173,7 +173,7 @@ var LargeLots = {
       var info = "<div class='row'><div class='col-xs-6 col-md-12'>\
         <table class='table table-bordered table-condensed'><tbody>\
           <tr><td>Address</td><td>" + address + "</td></tr>\
-          <tr><td>PIN</td><td>" + pin_formatted + " (<a target='_blank' href='http://cookcountypropertyinfo.com/Pages/PIN-Results.aspx?PIN=" + props.pin14 + "'>info</a>)</td></tr>";
+          <tr><td>PIN</td><td>" + pin_formatted + " (<a target='_blank' href='http://cookcountypropertyinfo.com/Pages/PIN-Results.aspx?PIN=" + props.display_pin + "'>info</a>)</td></tr>";
       if (props.zoning_classification){
           info += "<tr><td>Zoned</td><td> Residential (<a href='http://secondcityzoning.org/zone/" + props.zoning_classification + "' target='_blank'>" + props.zoning_classification + "</a>)</td></tr>";
       }
@@ -183,8 +183,8 @@ var LargeLots = {
       }
       info += "<tr><td colspan='2'><button type='button' id='lot_apply' data-pin='" + pin_formatted + "' data-address='" + address + "' href='#' class='btn btn-success'>Select this lot</button></td></tr>"
       info += "</tbody></table></div><div class='col-xs-6 col-md-12'>\
-      <img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' /></div></div>";
-      $.address.parameter('pin', props.pin14)
+      <img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.display_pin + "=' /></div></div>";
+      $.address.parameter('pin', props.display_pin)
       $('#lot-info').html(info);
       // console.log(info)
 
