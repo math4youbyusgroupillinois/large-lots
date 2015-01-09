@@ -145,7 +145,15 @@ var LargeLots = {
 
   formatAddress: function (prop) {
     if (prop.street_type == null) prop.street_type = "";
-    return prop.street_number + " " + prop.street_dir + " " + prop.street_name + " " + prop.street_type;
+    if (prop.street_number == null) prop.street_number = "";
+    if (prop.street_dir == null) prop.street_dir = "";
+    if (prop.street_name == null) prop.street_name = "";
+
+    var ret = prop.street_number + " " + prop.street_dir + " " + prop.street_name + " " + prop.street_type;
+    if (ret.trim() == "")
+      return "Unknown";
+    else
+      return ret;
   },
 
   getOneParcel: function(display_pin){
