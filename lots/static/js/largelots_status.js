@@ -5,6 +5,7 @@ var LargeLots = {
   geojson: null,
   marker: null,
   locationScope: 'Chicago',
+  maptiks_tracking_code: '91551db7-02a9-4f0f-834a-30f092e304fa',
 
   initialize: function(init_params) {
       LargeLots.defaultZoom = init_params.defaultZoom;
@@ -20,7 +21,8 @@ var LargeLots = {
         LargeLots.map = L.map('map', {
           center: LargeLots.map_centroid,
           zoom: LargeLots.defaultZoom,
-          scrollWheelZoom: false
+          scrollWheelZoom: false,
+          track_id: LargeLots.maptiks_tracking_code
         });
       }
       // render a map!

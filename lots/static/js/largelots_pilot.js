@@ -8,6 +8,7 @@ var LargeLots = {
   geojson: null,
   marker: null,
   locationScope: 'chicago',
+  maptiks_tracking_code: '91551db7-02a9-4f0f-834a-30f092e304fa',
   boundingBox: {
     'bottom': 41.86099561435056,
     'top': 41.92488743920406,
@@ -22,7 +23,8 @@ var LargeLots = {
           center: LargeLots.map_centroid,
           zoom: LargeLots.defaultZoom,
           scrollWheelZoom: false,
-          tapTolerance: 30
+          tapTolerance: 30,
+          track_id: LargeLots.maptiks_tracking_code
         });
       }
       // render a map!
