@@ -120,7 +120,7 @@ def application_active(request):
     chicago_time = timezone.localtime(timezone.now())
     start_date = timezone.make_aware(datetime(2014, 12, 1, 0, 0),
         timezone.get_current_timezone())
-    end_date = timezone.make_aware(datetime(2015, 1, 30, 23, 59),
+    end_date = timezone.make_aware(datetime(2015, 1, 31, 23, 59),
         timezone.get_current_timezone())
     
     if settings.APPLICATION_DISPLAY: # override with configuration setting
