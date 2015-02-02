@@ -103,9 +103,10 @@ def csv_dump(request, pilot):
             pin = lot.pin
             image_url = 'http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?%s=' % pin.replace('-', '')
             lots.extend([pin, addr, addr_full, image_url])
-        if len(lots) < 4:
-            lots.extend(['', '', ''])
-        lot_1_pin, lot_1_addr, lot_1_addr_full, lot_1_image, lot_2_pin, lot_2_addr, lot_2_addr_full, lot_2_image = lots
+        if len(lots) <= 4:
+            lots.extend(['', '', '', ''])
+        lot_1_pin, lot_1_addr, lot_1_addr_full, lot_1_image, \
+                lot_2_pin, lot_2_addr, lot_2_addr_full, lot_2_image = lots
         rows.append([
             application.id,
             application.received_date.strftime('%Y-%m-%d %H:%m %p'),
