@@ -49,10 +49,18 @@ var LargeLots = {
           info += "Zoned: " + props.zoning_classification + "<br />";
           info += "Sq Ft: " + props.sq_ft + "<br />";
           if (props.status == 1){
-              info += "Status: <strong>Application received</strong></p>"
-          } else {
-              info += "Status: <strong>Available</strong></p>"
+            info += "Status: <strong>Application received</strong>";
           }
+          else if (props.status == 2){
+            info += "Status: <strong>Application approved</strong>";
+          }
+          else if (props.status == 3){
+            info += "Status: <strong>Sold!</strong>";
+          }
+          else {
+            info += "Status: <strong>Available</strong>";
+          }
+          info += "</p>"
           this._div.innerHTML  = info;
         }
       };
@@ -159,7 +167,16 @@ var LargeLots = {
   },
 
   formatAddress: function (prop) {
-    return prop.street_number + " " + prop.dir + " " + prop.street_name + " " + prop.type;
+    if (prop.street_type == null) prop.street_type = "";
+    if (prop.street_number == null) prop.street_number = "";
+    if (prop.street_dir == null) prop.street_dir = "";
+    if (prop.street_name == null) prop.street_name = "";
+
+    var ret = prop.street_number + " " + prop.street_dir + " " + prop.street_name + " " + prop.street_type;
+    if (ret.trim() == "")
+      return "Unknown";
+    else
+      return ret;
   },
 
   getOneParcel: function(pin14){

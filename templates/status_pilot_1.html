@@ -77,7 +77,7 @@
       <a href="#close" class="cartodb-popup-close-button close">x</a>
       <div class="cartodb-popup-content-wrapper">
         <div class="cartodb-popup-content">
-          <h4>{{content.data.street_number}} {{content.data.dir}} {{content.data.street_name}} {{content.data.type}}</h4>
+          <h4>{{content.data.street_number}} {{content.data.street_dir}} {{content.data.street_name}} {{content.data.street_type}}</h4>
             <p>PIN: {{content.data.pin14}}<br />
             Zoned: {{content.data.zoning_classification}}<br />
             Sq Ft: {{content.data.sq_ft}}<br />
@@ -110,7 +110,7 @@
             tableName: 'lots_with_status',
             mainWhere: " where status = 3",
             overlayName: "chicago_community_areas WHERE community = 'PILOT 1 AREA'",
-            fields: "pin14,zoning_classification,ward,street_name,dir,street_number,type"
+            fields: "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type,status"
         }
         LargeLots.initialize(init_params);
       });
