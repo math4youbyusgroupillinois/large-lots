@@ -10,6 +10,10 @@
         line-width: 0.5;
         line-opacity: 1;
       }
+      #full_area_lots[status=1]{
+        polygon-fill: #A1285D;
+        line-color: #680D35;
+      }
     </style>
 {% endblock %}
 {% block content %}
@@ -22,7 +26,12 @@
               <div class='col-md-9'>
                 <p> The second Large Lot Program ended in East Garfield Park on <strong>August 4th at 11:59 p.m.</strong> Applicants will be contacted via a letter regarding the status of their application sometime after the 1st week of October.</p>
 
-                <p>Browse the map or enter your address below to see what lots have been <strong class='closed'>applied for and approved</strong> by the Chicago Plan Commission.</p>
+                <p>The East Garfield Park Large Lot program has ended. Here's a timeline of what's happened:</p>
+                <ul>
+                  <li>Autust 4th, 2014 - the East Garfield Park program ended and 190 lots were successfully applied for.</li>
+                </ul>
+
+                <p>Browse the map or enter your address below to see what lots have been <strong class='closed'>applied for</strong>.</p>
               </div>
             </div>
 
@@ -33,12 +42,12 @@
                   <input class='btn btn-primary btn-lg' id='search' type='button' value='Search' />
                 </div>
                 <div class="form-group">
-                    <input id="available" class="toggle-parcels checkbox" type="checkbox" />
+                    <input id="available" data-type='available' class="toggle-parcels checkbox" type="checkbox" />
 
                     <label for='available'><span class="label label-available">Not applied for</span></label>
 
-                    <input id="applied" class="toggle-parcels checkbox" type="checkbox" checked=true />
-                    <label for='applied'><span class="label label-applied">Application approved</span></label>
+                    <input id="applied" data-type='received' class="toggle-parcels checkbox" type="checkbox" checked=true />
+                    <label for='applied'><span class="label label-applied">Application received</span></label>
                 </div>
               </form>
             </p>
@@ -97,7 +106,7 @@
             },
             defaultZoom: 14,
             tableName: 'egp_parcels',
-            mainWhere: " where city_owned='T' and residential='T' and alderman_hold != 'T'",
+            mainWhere: " where status = 1",
             overlayName: "chicago_community_areas WHERE community = 'EAST GARFIELD PARK'",
             fields: "pin14,zoning_classification,ward,street_name,street_dir,street_number,street_type"
         }

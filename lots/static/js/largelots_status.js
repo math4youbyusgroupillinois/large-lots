@@ -45,7 +45,7 @@ var LargeLots = {
         var date_formatted = '';
         if (props) {
           var info = "<h4>" + LargeLots.formatAddress(props) + "</h4>";
-          info += "<p>PIN: " + props.pin14 + "<br />";
+          info += "<p>PIN: " + LargeLots.formatPin(props.pin14) + "<br />";
           info += "Zoned: " + props.zoning_classification + "<br />";
           info += "Sq Ft: " + props.sq_ft + "<br />";
           if (props.status == 1){
@@ -124,13 +124,19 @@ var LargeLots = {
       var checks = []
       $.each($('.toggle-parcels'), function(i, box){
           if($(box).is(':checked')){
-              checks.push($(box).attr('id'))
+              checks.push($(box).attr('data-type'))
           }
       });
       var sql = 'select * from ' + LargeLots.tableName + ' where ';
       var clauses = []
+      if(checks.indexOf('sold') >= 0){
+          clauses.push('status = 3')
+      }
       if(checks.indexOf('applied') >= 0){
           clauses.push('status = 2')
+      }
+      if(checks.indexOf('received') >= 0){
+          clauses.push('status = 1')
       }
       if(checks.indexOf('available') >= 0){
           clauses.push('status = 0')
@@ -139,8 +145,9 @@ var LargeLots = {
           clauses = clauses.join(' or ');
           sql += clauses;
       } else {
-          sql = 'select * from ' + LargeLots.tableName + ' where status not in (0,1,2)'
+          sql = 'select * from ' + LargeLots.tableName + ' where false'
       }
+
       LargeLots.lotsLayer.setSQL(sql);
   },
 
@@ -160,7 +167,7 @@ var LargeLots = {
         LargeLots.map.removeLayer(LargeLots.lastClickedLayer);
       }
       var sql = new cartodb.SQL({user: 'datamade', format: 'geojson'});
-      sql.execute('select * from {{table}} where pin14 = {{pin14}}', {table:LargeLots.tableName, pin14:pin14})
+      sql.execute("select * from {{table}} where pin14 = '{{pin14}}'", {table:LargeLots.tableName, pin14:pin14})
         .done(function(data){
             var shape = data.features[0];
             LargeLots.lastClickedLayer = L.geoJson(shape);
@@ -180,10 +187,18 @@ var LargeLots = {
           status = 'Application received';
           status_class = 'applied';
       }
+      if (props.status == 2){
+          status = 'Application approved';
+          status_class = 'applied';
+      }
+      if (props.status == 3){
+          status = 'Sold!';
+          status_class = 'applied';
+      }
       var info = "<p>Selected lot: </p><img class='img-responsive img-thumbnail' src='http://cookviewer1.cookcountyil.gov/Jsviewer/image_viewer/requestImg.aspx?" + props.pin14 + "=' />\
         <table class='table table-bordered table-condensed'><tbody>\
           <tr><td>Address</td><td>" + address + "</td></tr>\
-          <tr><td>PIN</td><td>" + props.pin14 + "</td></tr>\
+          <tr><td>PIN</td><td>" + LargeLots.formatPin(props.pin14) + "</td></tr>\
           <tr><td>&nbsp;</td><td><a target='_blank' href='http://cookcountypropertyinfo.com/Pages/PIN-Results.aspx?PIN=" + props.pin14 + "'>Tax and deed history &raquo;</a></td></tr>\
           <tr><td>Zoned</td><td> Residential (<a href='http://secondcityzoning.org/zone/" + props.zoning_classification + "' target='_blank'>" + props.zoning_classification + "</a>)</td></tr>\
           <tr><td>Sq ft</td><td>" + props.sq_ft + "</td></tr>\
@@ -257,6 +272,11 @@ var LargeLots = {
         shadowAnchor: [0, 0]
       });
     LargeLots.marker = L.marker([first.lat, first.lon]).addTo(LargeLots.map);
+  },
+
+  formatPin: function(pin) {
+    pin = pin + '';
+    return pin.replace(/(\d{2})(\d{2})(\d{3})(\d{3})(\d{4})/, '$1-$2-$3-$4-$5');
   },
 
   //converts a slug or query string in to readable text

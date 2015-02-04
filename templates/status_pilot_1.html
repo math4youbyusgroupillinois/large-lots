@@ -27,13 +27,13 @@
 
                 <p>The Greater Englewood Area Large Lot program has ended. Here's a timeline of what's happened:</p>
                 <ul>
-                  <li>April 21, 2014 - the Englewood pilot ended and 414 applications for lots were received.</li>
+                  <li>April 21, 2014 - the Englewood program ended and 414 applications for lots were received.</li>
                   <li>August 21, 2014 - the <a href='http://www.cityofchicago.org/city/en/depts/dcd/supp_info/chicago_plan_commission.html'>Chicago Plan Commission</a> approved the sale of 322 properties.</li>
                   <li>November 5, 2014 - <a href='http://www.cityofchicago.org/city/en/about/council.html'>Chicago City Council</a> passed an <a href='https://chicago.legistar.com/View.ashx?M=F&ID=3279643&GUID=AF8D3692-1A52-4931-871B-24419313126E'>ordinance</a> approving the final sale.</li>
-                  <li>January 30, 2015 - 253 lots were officially sold to residents.</li>
+                  <li>January 30, 2015 - 276 lots were officially sold to residents.</li>
                 </ul>
 
-                <p>Browse the map or enter your address below to see what lots have been <strong class='closed'>applied for and approved</strong> by the Chicago Plan Commission.</p>
+                <p>Browse the map or enter your address below to see what lots have been <strong class='closed'>sold</strong> to residents.</p>
               </div>
             </div>
 
@@ -44,11 +44,11 @@
                   <input class='btn btn-primary btn-lg' id='search' type='button' value='Search' />
                 </div>
                 <div class="form-group">
-                    <input id="available" class="toggle-parcels checkbox" type="checkbox" />
+                    <input id="available" data-type='available' class="toggle-parcels checkbox" type="checkbox" />
 
                     <label for='available'><span class="label label-available">Not applied for</span></label>
 
-                    <input id="applied" class="toggle-parcels checkbox" type="checkbox" checked=true />
+                    <input id="applied" data-type='sold' class="toggle-parcels checkbox" type="checkbox" checked=true />
                     <label for='applied'><span class="label label-applied">Sold</span></label>
                 </div>
               </form>
