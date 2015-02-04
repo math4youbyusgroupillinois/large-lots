@@ -10,7 +10,7 @@
         line-width: 0.5;
         line-opacity: 1;
       }
-      #full_area_lots[status=2]{
+      #full_area_lots[status=3]{
         polygon-fill: #A1285D;
         line-color: #680D35;
       }
@@ -44,7 +44,7 @@
                     <label for='available'><span class="label label-available">Not applied for</span></label>
 
                     <input id="applied" class="toggle-parcels checkbox" type="checkbox" checked=true />
-                    <label for='applied'><span class="label label-applied">Application approved</span></label>
+                    <label for='applied'><span class="label label-applied">Sold</span></label>
                 </div>
               </form>
             </p>
@@ -103,7 +103,7 @@
                 'left': -87.69750595092773
             },
             tableName: 'lots_with_status',
-            mainWhere: " where status = 2",
+            mainWhere: " where status = 3",
             overlayName: "chicago_community_areas WHERE community = 'PILOT 1 AREA'",
             fields: "pin14,zoning_classification,ward,street_name,dir,street_number,type"
         }
